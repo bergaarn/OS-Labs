@@ -6,12 +6,17 @@
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 double bankAccountBalance = 0;
 
+// Using lock/unlock in the deposit/withdraw functions allows for the shortest amount of time spent in critical regions
 void deposit(double amount) {
+    pthread_mutex_lock(&lock); // Enter Critical Region by restricting access to shared memory variables
     bankAccountBalance += amount;
+    pthread_mutex_unlock(&lock); // Leaving Critical Region by allowing other threads to access shared memory variables
 }
 
 void withdraw(double amount) {
+    pthread_mutex_lock(&lock);
     bankAccountBalance -= amount;
+    pthread_mutex_unlock(&lock);
 }
 
 // utility function to identify even-odd numbers
@@ -20,8 +25,10 @@ unsigned odd(unsigned long num) {
 }
 
 // simulate id performing 1000 transactions
-void do1000Transactions(unsigned long id) {
-    for (int i = 0; i < 1000; i++) {
+void do1000Transactions(unsigned long id) 
+{
+    for (int i = 0; i < 1000; i++) 
+    {
         if (odd(id))
             deposit(100.00); // odd threads deposit
         else
@@ -29,7 +36,8 @@ void do1000Transactions(unsigned long id) {
     }
 }
 
-void* child(void* buf) {
+void* child(void* buf) 
+{
     unsigned long childID = (unsigned long)buf;
     do1000Transactions(childID);
     return NULL;
